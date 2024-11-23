@@ -207,11 +207,12 @@ if __name__ == '__main__':
     print()
 
     try:
-        loginp.handle_login_client(username, password)
+        key = loginp.handle_login_client(username, password)
     except SiFT_LOGIN_Error as e:
         print('SiFT_LOGIN_Error: ' + e.err_msg)
         sys.exit(1)
 
     cmdp = SiFT_CMD(mtp)
+    cmdp.set_key(key)
 
     SiFTShell().cmdloop()

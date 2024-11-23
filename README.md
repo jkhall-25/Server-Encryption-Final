@@ -2,7 +2,7 @@ TODO:
 - Login Protocol
   - key establishment
     - ~~client key~~
-    - server key
+    - ~~server key~~
   - verify timestamp
   - verify sequence numbers
   - verify user/password

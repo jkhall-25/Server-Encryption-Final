@@ -57,7 +57,7 @@ class Server:
         loginp.set_server_users(users)
 
         try:
-            user = loginp.handle_login_server()
+            user, key = loginp.handle_login_server()
         except SiFT_LOGIN_Error as e:
             print('SiFT_LOGIN_Error: ' + e.err_msg)
             print('Closing connection with client on ' + addr[0] + ':' + str(addr[1]))
@@ -67,6 +67,11 @@ class Server:
         cmdp = SiFT_CMD(mtp)
         cmdp.set_server_rootdir(self.server_rootdir)
         cmdp.set_user_rootdir(users[user]['rootdir'])
+        cmdp.set_key(key)
+
+        #DEBUG
+        print("key set: " + str(key))
+        #DEBUG
 
         while True:
             try:

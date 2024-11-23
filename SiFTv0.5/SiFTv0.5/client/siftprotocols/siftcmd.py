@@ -39,6 +39,7 @@ class SiFT_CMD:
         self.user_rootdir = None
         self.current_dir = []
         self.filesize_limit = 2**16
+        self.key = None
 
 
     # sets the root directory (to be used by the server)
@@ -58,6 +59,9 @@ class SiFT_CMD:
     # sets file size limit for uploads
     def set_filesize_limit(self, limit):
         self.filesize_limit = limit
+
+    def set_key(self, key):
+        self.key = key
 
 
     # builds a command request from a dictionary
