@@ -24,12 +24,19 @@ class SiFT_LOGIN:
         # --------- STATE ------------
         self.mtp = mtp
         self.server_users = None 
+        self.server_private_key = None
+        self.server_public_key = None
 
 
     # sets user passwords dictionary (to be used by the server)
     def set_server_users(self, users):
         self.server_users = users
 
+    def set_private_key(self, private_key):
+        self.server_private_key = private_key
+
+    def set_public_key(self, public_key):
+        self.server_public_key = public_key
 
    # builds a login request from a dictionary
     def build_login_req(self, login_req_struct):
@@ -107,9 +114,9 @@ class SiFT_LOGIN:
 
         login_req_struct = self.parse_login_req(msg_payload)
 
-        #check timestamp, if outside bounds, close connection
+        #check timestamp, if outside bounds (2 sec), close connection
         now = time.time()
-        if login_req_struct['timestamp'] > now + 2.0 or login_req_struct['timestamp'] < now -2.0:
+        if login_req_struct['timestamp'] > now + 1.0 or login_req_struct['timestamp'] < now -1.0:
             raise SiFT_LOGIN_Error('Unable to authenticate login')
 
         # checking username and password

@@ -1,6 +1,6 @@
 TODO:
 - Login Protocol
-  - key establishment
+  - ~~key establishment~~
     - ~~client key~~
     - ~~server key~~
   - verify timestamp

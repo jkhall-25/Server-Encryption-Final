@@ -2,6 +2,7 @@
 
 import sys, os, socket, cmd, getpass
 from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
 from siftprotocols.siftmtp import SiFT_MTP, SiFT_MTP_Error
 from siftprotocols.siftlogin import SiFT_LOGIN, SiFT_LOGIN_Error
 from siftprotocols.siftcmd import SiFT_CMD, SiFT_CMD_Error
@@ -205,6 +206,12 @@ if __name__ == '__main__':
     username = input('   Username: ')
     password = getpass.getpass('   Password: ')
     print()
+
+    with open('ServerPublicKey.pem', 'rb') as f:
+            key = f.read()
+            ServerKey = RSA.import_key(key)
+            PublicKey = ServerKey.public_key()
+    loginp.set_public_key(PublicKey)
 
     try:
         key = loginp.handle_login_client(username, password)

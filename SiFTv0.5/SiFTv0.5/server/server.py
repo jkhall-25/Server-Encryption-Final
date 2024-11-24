@@ -4,6 +4,7 @@ import sys, threading, socket, getpass
 from siftprotocols.siftmtp import SiFT_MTP, SiFT_MTP_Error
 from siftprotocols.siftlogin import SiFT_LOGIN, SiFT_LOGIN_Error
 from siftprotocols.siftcmd import SiFT_CMD, SiFT_CMD_Error
+from Crypto.PublicKey import RSA
 
 class Server:
     def __init__(self):
@@ -55,6 +56,15 @@ class Server:
         loginp = SiFT_LOGIN(mtp)
         users = self.load_users(self.server_usersfile)
         loginp.set_server_users(users)
+
+        pwd = b'Hall-McCarthy'
+        with open('ServerPrivateKey.pem', 'rb') as f:
+            data = f.read()
+            ServerKeyPair = RSA.import_key(data, pwd)
+            PublicKey = ServerKeyPair.public_key()
+            PrivateKey = ServerKeyPair
+        loginp.set_private_key(PrivateKey)
+        loginp.set_public_key(PublicKey)
 
         try:
             user, key = loginp.handle_login_server()
