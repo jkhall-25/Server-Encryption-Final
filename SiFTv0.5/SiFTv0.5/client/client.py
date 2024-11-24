@@ -208,9 +208,9 @@ if __name__ == '__main__':
     print()
 
     with open('ServerPublicKey.pem', 'rb') as f:
-            key = f.read()
-            ServerKey = RSA.import_key(key)
-            PublicKey = ServerKey.public_key()
+        key = f.read()
+        ServerKey = RSA.import_key(key)
+        PublicKey = ServerKey.public_key()
     loginp.set_public_key(PublicKey)
 
     try:

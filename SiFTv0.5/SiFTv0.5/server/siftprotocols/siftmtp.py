@@ -39,7 +39,6 @@ class SiFT_MTP:
 		self.peer_socket = peer_socket
 		self.msg_sqn = 0
 
-
 	# parses a message header and returns a dictionary containing the header fields
 	def parse_msg_header(self, msg_hdr):
 
