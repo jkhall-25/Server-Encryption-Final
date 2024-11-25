@@ -27,7 +27,6 @@ class SiFT_LOGIN:
         self.server_private_key = None
         self.server_public_key = None
 
-
     # sets user passwords dictionary (to be used by the server)
     def set_server_users(self, users):
         self.server_users = users
@@ -149,7 +148,10 @@ class SiFT_LOGIN:
         if self.DEBUG:
             print('User ' + login_req_struct['username'] + ' logged in')
         # DEBUG 
-        
+        #pass server keys if login successful
+        self.mtp.PrivateKey = self.server_private_key
+        self.mtp.PublicKey = self.server_public_key
+
         client_random = login_req_struct['client_random']
         server_random = login_res_struct['server_random']
         random_numbers = client_random + server_random
@@ -169,7 +171,8 @@ class SiFT_LOGIN:
         login_req_struct['password'] = password
         login_req_struct['client_random'] = get_random_bytes(16).hex()
         msg_payload = self.build_login_req(login_req_struct)
-
+        
+        self.mtp.set_keypair(self.server_public_key, self.server_private_key)
 
         # DEBUG 
         if self.DEBUG:

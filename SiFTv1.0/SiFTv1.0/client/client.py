@@ -219,7 +219,7 @@ if __name__ == '__main__':
         print('SiFT_LOGIN_Error: ' + e.err_msg)
         sys.exit(1)
 
+    mtp.set_key(key)
     cmdp = SiFT_CMD(mtp)
-    cmdp.set_key(key)
 
     SiFTShell().cmdloop()
