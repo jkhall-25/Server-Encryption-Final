@@ -73,7 +73,7 @@ class Server:
             print('Closing connection with client on ' + addr[0] + ':' + str(addr[1]))
             client_socket.close()
             return
-
+        
         cmdp = SiFT_CMD(mtp)
         cmdp.set_server_rootdir(self.server_rootdir)
         cmdp.set_user_rootdir(users[user]['rootdir'])

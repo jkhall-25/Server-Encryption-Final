@@ -87,6 +87,8 @@ class SiFT_LOGIN:
     # handles login process (to be used by the server)
     def handle_login_server(self):
 
+        self.mtp.set_keypair(self.server_public_key, self.server_private_key)
+
         if not self.server_users:
             raise SiFT_LOGIN_Error('User database is required for handling login at server')
 
