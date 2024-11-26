@@ -84,12 +84,10 @@ class SiFT_MTP:
 		encrypted_payload, tag = cipher.encrypt_and_digest(plain_payload)
 		return encrypted_payload, tag
 	
-	def decrypt_payload(self, encrypted_payload, key, nonce):
-		encrypted_msg = encrypted_payload[:-12]
-		mac = encrypted_payload[-12:]
+	def decrypt_payload(self, encrypted_payload, key, nonce, mac):
 		cipher = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=self.size_msg_mac)
 		try: 
-			plain_payload = cipher.decrypt_and_verify(encrypted_msg, mac, output=None)
+			plain_payload = cipher.decrypt_and_verify(encrypted_payload, received_mac_tag=mac, output=None)
 		except SiFT_MTP_Error as e:
 			raise SiFT_MTP_Error('Invalid MAC: ' + e.err_msg) 
 		return plain_payload
@@ -130,8 +128,8 @@ class SiFT_MTP:
 		if parsed_msg_hdr['typ'] not in self.msg_types:
 			raise SiFT_MTP_Error('Unknown message type found in message header')
 		
-		# if parsed_msg_hdr['sqn'] != self.msg_sqn:
-		# 	raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn))
+		if int.from_bytes(parsed_msg_hdr['sqn']) != self.msg_sqn:
+			raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn) + ' expected, but recieved ' + str(parsed_msg_hdr['sqn']))
 
 		msg_len = int.from_bytes(parsed_msg_hdr['len'], byteorder='big')
 
@@ -152,14 +150,6 @@ class SiFT_MTP:
 			if len(msg_body) != msg_len - self.size_msg_hdr - self.size_msg_mac: 
 				raise SiFT_MTP_Error('Incomplete message body received')
 		
-		# DEBUG 
-		if self.DEBUG:
-			print('MTP message received (' + str(msg_len) + '):')
-			print('HDR (' + str(len(msg_hdr)) + '): ' + msg_hdr.hex())
-			print('BDY (' + str(len(msg_body)) + '): ')
-			print(msg_body.hex())
-		#DEBUG
-		
 		try:
 			mac = self.receive_bytes(self.size_msg_mac)
 		except SiFT_MTP_Error as e:
@@ -176,8 +166,20 @@ class SiFT_MTP:
 		else:
 			key = self.session_key
 
+		# DEBUG 
+		if self.DEBUG:
+			print('MTP message received (' + str(msg_len) + '):')
+			print('HDR (' + str(len(msg_hdr)) + '): ' + msg_hdr.hex())
+			print('BDY (' + str(len(msg_body)) + '): ')
+			print(msg_body.hex())
+			print('MAC (' + str(len(mac)) + '):' + mac.hex())
+			if parsed_msg_hdr['typ'] == self.type_login_req:
+				print('ETK (' + str(len(etk)) + '):' + etk.hex())
+			print('------------------------------------------')
+		#DEBUG
+
 		nonce = parsed_msg_hdr['sqn'] + parsed_msg_hdr['rnd']
-		decrypted_payload = self.decrypt_payload(msg_body, key, nonce)
+		decrypted_payload = self.decrypt_payload(msg_body, key, nonce, mac)
 
 		# DEBUG 
 		if self.DEBUG:
