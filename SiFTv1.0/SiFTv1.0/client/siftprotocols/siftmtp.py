@@ -130,8 +130,8 @@ class SiFT_MTP:
 		if parsed_msg_hdr['typ'] not in self.msg_types:
 			raise SiFT_MTP_Error('Unknown message type found in message header')
 		
-		if parsed_msg_hdr['sqn'] != self.msg_sqn:
-			raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn))
+		# if parsed_msg_hdr['sqn'] != self.msg_sqn:
+		# 	raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn))
 
 		msg_len = int.from_bytes(parsed_msg_hdr['len'], byteorder='big')
 
@@ -202,10 +202,6 @@ class SiFT_MTP:
 			self.peer_socket.sendall(bytes_to_send)
 		except:
 			raise SiFT_MTP_Error('Unable to send via peer socket')
-		
-	def generate_mac(self):
-		AES.GCM
-		return
 
 	# builds and sends message of a given type using the provided payload
 	def send_msg(self, msg_type, msg_payload):
