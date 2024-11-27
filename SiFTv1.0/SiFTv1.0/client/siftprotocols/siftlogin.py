@@ -126,7 +126,7 @@ class SiFT_LOGIN:
                 raise SiFT_LOGIN_Error('Password verification failed')
         else:
             raise SiFT_LOGIN_Error('Unkown user attempted to log in')
-
+        
         # building login response
         login_res_struct = {}
         login_res_struct['request_hash'] = request_hash

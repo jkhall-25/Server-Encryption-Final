@@ -48,6 +48,7 @@ class SiFT_MTP:
 		self.session_key = None
 		self.PrivateKey = None
 		self.PublicKey = None
+		self.tk = None
 
 	def set_key(self, key):
 		self.session_key = key
@@ -76,8 +77,7 @@ class SiFT_MTP:
 	def decrypt_tk(self, etk):
 		key = self.PrivateKey
 		cipher = PKCS1_OAEP.new(key)
-		tk = cipher.decrypt(etk)
-		return tk
+		self.tk = cipher.decrypt(etk)
 
 	def encrypt_payload(self, plain_payload, key, nonce):
 		cipher = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=self.size_msg_mac)
@@ -155,28 +155,18 @@ class SiFT_MTP:
 		except SiFT_MTP_Error as e:
 			raise SiFT_MTP_Error('Unable to receive mac --> ' + e.err_msg)
 		
-		if msg_type == self.type_login_req or msg_type == self.type_login_res:
+		if msg_type == self.type_login_req:
 			try:
 				etk = self.receive_bytes(self.size_msg_etk)
 			except SiFT_MTP_Error as e:
 				raise SiFT_MTP_Error('Unable to receive mac --> ' + e.err_msg)
 			#etk = msg_body[-256:]
-			tk = self.decrypt_tk(etk)
-			key = tk
+			self.decrypt_tk(etk)
+			key = self.tk
+		elif msg_type == self.type_login_res:
+			key = self.tk
 		else:
 			key = self.session_key
-
-		# DEBUG 
-		if self.DEBUG:
-			print('MTP message received (' + str(msg_len) + '):')
-			print('HDR (' + str(len(msg_hdr)) + '): ' + msg_hdr.hex())
-			print('BDY (' + str(len(msg_body)) + '): ')
-			print(msg_body.hex())
-			print('MAC (' + str(len(mac)) + '):' + mac.hex())
-			if parsed_msg_hdr['typ'] == self.type_login_req:
-				print('ETK (' + str(len(etk)) + '):' + etk.hex())
-			print('------------------------------------------')
-		#DEBUG
 
 		nonce = parsed_msg_hdr['sqn'] + parsed_msg_hdr['rnd']
 		decrypted_payload = self.decrypt_payload(msg_body, key, nonce, mac)
@@ -188,7 +178,7 @@ class SiFT_MTP:
 			print('BDY (' + str(len(decrypted_payload)) + '): ')
 			print(msg_body.hex())
 			print('MAC (' + str(len(mac)) + '):' + mac.hex())
-			if parsed_msg_hdr['typ'] == self.type_login_res:
+			if parsed_msg_hdr['typ'] == self.type_login_req:
 				print('ETK (' + str(len(etk)) + '):' + etk.hex())
 			print('------------------------------------------')
 		# DEBUG 
@@ -211,14 +201,19 @@ class SiFT_MTP:
 		sqn = self.msg_sqn.to_bytes(2, byteorder='big')
 		msg_rnd = get_random_bytes(6)
 		msg_len = self.size_msg_hdr + len(msg_payload)
+		msg_etk = b''
 
 		#if the message sent is a login message, account for etk
-		if msg_type == self.type_login_req or msg_type == self.type_login_res: 
+		if msg_type == self.type_login_req: 
 			tk = get_random_bytes(32)
-			key = tk
+			self.tk = tk
 			nonce = sqn + msg_rnd
 			msg_etk = self.encrypt_tk(tk)	
-			msg_len += len(msg_etk)		
+			msg_len += len(msg_etk)	
+			key = self.tk	
+		elif msg_type == self.type_login_res:
+			nonce = sqn + msg_rnd
+			key = self.tk
 		else:
 			key = self.session_key
 
@@ -236,7 +231,8 @@ class SiFT_MTP:
 			print('BDY (' + str(len(msg_payload)) + '): ')
 			print(msg_payload.hex())
 			print('MAC (' + str(len(msg_mac)) + '):' + msg_mac.hex())
-			print('ETK (' + str(len(msg_etk)) + '):' + msg_etk.hex())
+			if msg_type == self.type_login_req:
+				print('ETK (' + str(len(msg_etk)) + '):' + msg_etk.hex())
 			print('------------------------------------------')
 		# DEBUG 
 

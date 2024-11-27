@@ -115,10 +115,10 @@ class SiFT_LOGIN:
 
         login_req_struct = self.parse_login_req(msg_payload)
 
-        #check timestamp, if outside bounds (2 sec), close connection
-        now = time.time()
-        if login_req_struct['timestamp'] > now + 1.0 or login_req_struct['timestamp'] < now -1.0:
-            raise SiFT_LOGIN_Error('Unable to authenticate login')
+        # #check timestamp, if outside bounds (2 sec), close connection
+        # now = time.time()
+        # if login_req_struct['timestamp'] > now + 1.0 or login_req_struct['timestamp'] < now -1.0:
+        #     raise SiFT_LOGIN_Error('Unable to authenticate login')
 
         # checking username and password
         if login_req_struct['username'] in self.server_users:
