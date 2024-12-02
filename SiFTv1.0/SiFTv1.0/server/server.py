@@ -77,7 +77,7 @@ class Server:
         cmdp = SiFT_CMD(mtp)
         cmdp.set_server_rootdir(self.server_rootdir)
         cmdp.set_user_rootdir(users[user]['rootdir'])
-        cmdp.set_key(key)
+        mtp.set_key(key)
 
         #DEBUG
         print("key set: " + str(key))

@@ -208,16 +208,15 @@ class SiFT_MTP:
 		if msg_type == self.type_login_req: 
 			tk = get_random_bytes(32)
 			self.tk = tk
-			nonce = sqn + msg_rnd
 			msg_etk = self.encrypt_tk(tk)	
 			msg_len += len(msg_etk)	
 			key = self.tk	
 		elif msg_type == self.type_login_res:
-			nonce = sqn + msg_rnd
 			key = self.tk
 		else:
 			key = self.session_key
 
+		nonce = sqn + msg_rnd
 		encrypted_payload, msg_mac = self.encrypt_payload(msg_payload, key, nonce)
 		msg_len += len(msg_mac)
 

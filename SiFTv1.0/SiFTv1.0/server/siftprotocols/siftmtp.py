@@ -128,7 +128,7 @@ class SiFT_MTP:
 		if parsed_msg_hdr['typ'] not in self.msg_types:
 			raise SiFT_MTP_Error('Unknown message type found in message header')
 		
-		if int.from_bytes(parsed_msg_hdr['sqn']) <= self.msg_sqn:
+		if int.from_bytes(parsed_msg_hdr['sqn']) <= int(self.msg_sqn):
 			raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn) + ' expected, but recieved ' + str(parsed_msg_hdr['sqn']))
 
 		msg_len = int.from_bytes(parsed_msg_hdr['len'], byteorder='big')
@@ -208,16 +208,15 @@ class SiFT_MTP:
 		if msg_type == self.type_login_req: 
 			tk = get_random_bytes(32)
 			self.tk = tk
-			nonce = sqn + msg_rnd
 			msg_etk = self.encrypt_tk(tk)	
 			msg_len += len(msg_etk)	
 			key = self.tk	
 		elif msg_type == self.type_login_res:
-			nonce = sqn + msg_rnd
 			key = self.tk
 		else:
 			key = self.session_key
 
+		nonce = sqn + msg_rnd
 		encrypted_payload, msg_mac = self.encrypt_payload(msg_payload, key, nonce)
 		msg_len += len(msg_mac)
 
@@ -243,4 +242,4 @@ class SiFT_MTP:
 		except SiFT_MTP_Error as e:
 			raise SiFT_MTP_Error('Unable to send message to peer --> ' + e.err_msg)
 		
-		self.msg_sqn = sqn
+		self.msg_sqn = int.from_bytes(sqn)
