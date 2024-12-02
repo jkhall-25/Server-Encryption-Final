@@ -12,6 +12,6 @@
 - Extend MTP
   - ~~add headers~~
   - ~~add sequence numbers~~ and sqn verification
-  - encrypt payload
-  - add MAC and MAC verification
+  - ~~encrypt payload~~
+  - ~~add MAC and MAC verification~~
   - ~~verify login protocol supports key exchange~~

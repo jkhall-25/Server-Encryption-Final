@@ -128,7 +128,7 @@ class SiFT_MTP:
 		if parsed_msg_hdr['typ'] not in self.msg_types:
 			raise SiFT_MTP_Error('Unknown message type found in message header')
 		
-		if int.from_bytes(parsed_msg_hdr['sqn']) != self.msg_sqn:
+		if int.from_bytes(parsed_msg_hdr['sqn']) <= int(self.msg_sqn):
 			raise SiFT_MTP_Error('Message too old! SQN: ' + str(self.msg_sqn) + ' expected, but recieved ' + str(parsed_msg_hdr['sqn']))
 
 		msg_len = int.from_bytes(parsed_msg_hdr['len'], byteorder='big')
@@ -183,7 +183,7 @@ class SiFT_MTP:
 			print('------------------------------------------')
 		# DEBUG 
 
-		self.msg_sqn += 1
+		self.msg_sqn = int.from_bytes(parsed_msg_hdr['sqn'])
 
 		return parsed_msg_hdr['typ'], decrypted_payload
 
@@ -198,6 +198,7 @@ class SiFT_MTP:
 	# builds and sends message of a given type using the provided payload
 	def send_msg(self, msg_type, msg_payload):
 	
+		self.msg_sqn += 1
 		sqn = self.msg_sqn.to_bytes(2, byteorder='big')
 		msg_rnd = get_random_bytes(6)
 		msg_len = self.size_msg_hdr + len(msg_payload)
@@ -242,4 +243,4 @@ class SiFT_MTP:
 		except SiFT_MTP_Error as e:
 			raise SiFT_MTP_Error('Unable to send message to peer --> ' + e.err_msg)
 		
-		self.msg_sqn += 1
+		self.msg_sqn = int.from_bytes(sqn)
