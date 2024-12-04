@@ -79,13 +79,15 @@ class SiFT_MTP:
 		cipher = PKCS1_OAEP.new(key)
 		self.tk = cipher.decrypt(etk)
 
-	def encrypt_payload(self, plain_payload, key, nonce):
+	def encrypt_payload(self, plain_payload,  header, key, nonce):
 		cipher = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=self.size_msg_mac)
+		cipher.update(header)
 		encrypted_payload, tag = cipher.encrypt_and_digest(plain_payload)
 		return encrypted_payload, tag
 	
-	def decrypt_payload(self, encrypted_payload, key, nonce, mac):
+	def decrypt_payload(self, encrypted_payload, header, key, nonce, mac):
 		cipher = AES.new(key, AES.MODE_GCM, nonce=nonce, mac_len=self.size_msg_mac)
+		cipher.update(header)
 		try: 
 			plain_payload = cipher.decrypt_and_verify(encrypted_payload, received_mac_tag=mac, output=None)
 		except SiFT_MTP_Error as e:
@@ -159,7 +161,7 @@ class SiFT_MTP:
 			try:
 				etk = self.receive_bytes(self.size_msg_etk)
 			except SiFT_MTP_Error as e:
-				raise SiFT_MTP_Error('Unable to receive mac --> ' + e.err_msg)
+				raise SiFT_MTP_Error('Unable to receive etk --> ' + e.err_msg)
 			#etk = msg_body[-256:]
 			self.decrypt_tk(etk)
 			key = self.tk
@@ -169,7 +171,7 @@ class SiFT_MTP:
 			key = self.session_key
 
 		nonce = parsed_msg_hdr['sqn'] + parsed_msg_hdr['rnd']
-		decrypted_payload = self.decrypt_payload(msg_body, key, nonce, mac)
+		decrypted_payload = self.decrypt_payload(msg_body, msg_hdr, key, nonce, mac)
 
 		# DEBUG 
 		if self.DEBUG:
@@ -199,9 +201,9 @@ class SiFT_MTP:
 	def send_msg(self, msg_type, msg_payload):
 	
 		self.msg_sqn += 1
-		sqn = self.msg_sqn.to_bytes(2, byteorder='big')
-		msg_rnd = get_random_bytes(6)
-		msg_len = self.size_msg_hdr + len(msg_payload)
+		sqn = self.msg_sqn.to_bytes(self.size_msg_hdr_sqn, byteorder='big')
+		msg_rnd = get_random_bytes(self.size_msg_hdr_rnd)
+		msg_len = self.size_msg_hdr + len(msg_payload) + self.size_msg_mac
 		msg_etk = b''
 
 		#if the message sent is a login message, account for etk
@@ -209,20 +211,19 @@ class SiFT_MTP:
 			tk = get_random_bytes(32)
 			self.tk = tk
 			msg_etk = self.encrypt_tk(tk)	
-			msg_len += len(msg_etk)	
+			msg_len += self.size_msg_etk	
 			key = self.tk	
 		elif msg_type == self.type_login_res:
 			key = self.tk
 		else:
 			key = self.session_key
 
-		nonce = sqn + msg_rnd
-		encrypted_payload, msg_mac = self.encrypt_payload(msg_payload, key, nonce)
-		msg_len += len(msg_mac)
-
 		# build message
 		msg_hdr_len = msg_len.to_bytes(self.size_msg_hdr_len, byteorder='big')
 		msg_hdr = self.msg_hdr_ver + msg_type + msg_hdr_len + sqn + msg_rnd + self.msg_hdr_rsv
+
+		nonce = sqn + msg_rnd
+		encrypted_payload, msg_mac = self.encrypt_payload(msg_payload, msg_hdr, key, nonce)
 
 		# DEBUG 
 		if self.DEBUG:
