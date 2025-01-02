@@ -52,7 +52,7 @@ class SiFT_LOGIN:
 
         login_req_fields = login_req.decode(self.coding).split(self.delimiter)
         login_req_struct = {}
-        login_req_struct['timestamp'] = float(login_req_fields[0])
+        login_req_struct['timestamp'] = int(login_req_fields[0])
         login_req_struct['username'] = login_req_fields[1]
         login_req_struct['password'] = login_req_fields[2]
         login_req_struct['client_random'] = login_req_fields[3]
@@ -168,7 +168,7 @@ class SiFT_LOGIN:
 
         # building a login request
         login_req_struct = {}
-        login_req_struct['timestamp'] = time.time()
+        login_req_struct['timestamp'] = str(time.time_ns())
         login_req_struct['username'] = username
         login_req_struct['password'] = password
         login_req_struct['client_random'] = get_random_bytes(16).hex()

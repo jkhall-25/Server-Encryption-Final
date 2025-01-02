@@ -52,7 +52,7 @@ class SiFT_LOGIN:
 
         login_req_fields = login_req.decode(self.coding).split(self.delimiter)
         login_req_struct = {}
-        login_req_struct['timestamp'] = float(login_req_fields[0])
+        login_req_struct['timestamp'] = str(login_req_fields[0])
         login_req_struct['username'] = login_req_fields[1]
         login_req_struct['password'] = login_req_fields[2]
         login_req_struct['client_random'] = login_req_fields[3]
@@ -115,10 +115,10 @@ class SiFT_LOGIN:
 
         login_req_struct = self.parse_login_req(msg_payload)
 
-        # #check timestamp, if outside bounds (2 sec), close connection
-        # now = time.time()
-        # if login_req_struct['timestamp'] > now + 1.0 or login_req_struct['timestamp'] < now -1.0:
-        #     raise SiFT_LOGIN_Error('Unable to authenticate login')
+        #check timestamp, if outside bounds (2 sec), close connection
+        now = time.time_ns()
+        if int(login_req_struct['timestamp']) > now + 1000000000 or int(login_req_struct['timestamp']) < now -1000000000:
+            raise SiFT_LOGIN_Error('Unable to authenticate login')
 
         # checking username and password
         if login_req_struct['username'] in self.server_users:
@@ -126,7 +126,7 @@ class SiFT_LOGIN:
                 raise SiFT_LOGIN_Error('Password verification failed')
         else:
             raise SiFT_LOGIN_Error('Unkown user attempted to log in')
-
+        
         # building login response
         login_res_struct = {}
         login_res_struct['request_hash'] = request_hash
@@ -168,7 +168,7 @@ class SiFT_LOGIN:
 
         # building a login request
         login_req_struct = {}
-        login_req_struct['timestamp'] = time.time()
+        login_req_struct['timestamp'] = str(time.time_ns())
         login_req_struct['username'] = username
         login_req_struct['password'] = password
         login_req_struct['client_random'] = get_random_bytes(16).hex()

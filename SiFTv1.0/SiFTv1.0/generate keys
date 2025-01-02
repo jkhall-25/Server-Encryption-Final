@@ -3,12 +3,12 @@ from Crypto.PublicKey import RSA
 ServerKey = RSA.generate(2048)
 
 pwd = 'Hall-McCarthy'
-with open("SiFTv1.0\SiFTv1.0\server\ServerPrivateKey.pem", "wb") as f:
+with open("server\ServerPrivateKey.pem", "wb") as f:
     ServerKeyPair = ServerKey.export_key(passphrase=pwd)
     f.write(ServerKeyPair)
     f.close()
 
-with open("SiFTv1.0\SiFTv1.0\client\ServerPublicKey.pem", "wb") as f:
+with open("client\ServerPublicKey.pem", "wb") as f:
     PublicKey = ServerKey.public_key().export_key()
     f.write(PublicKey)
     f.close()
