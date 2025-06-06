@@ -1,4 +1,4 @@
-This Project is an implementation of a cryptographically secure server/client protocol. 
+This project is an implementation of a cryptographically secure server/client protocol according to specs provided by the stakeholder in SiFT v1.0 specification.md
 
 To host, run "generate keys" file to generate the RSA keys required for secure communication. Then run server.py to start listening on server. To connect, run client.py and use one of the following user logins:
 
